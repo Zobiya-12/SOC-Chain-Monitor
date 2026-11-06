@@ -1,0 +1,21 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local database (contains your logs)
+backend/data/
+*.db
+
+# Node / Hardhat
+node_modules/
+contracts/artifacts/
+contracts/cache/
+contracts/deployment.json
+
+# Secrets - NEVER commit these
+.env
+.env.*
+!.env.example

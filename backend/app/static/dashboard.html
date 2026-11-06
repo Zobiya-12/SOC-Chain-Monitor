@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070816">
+  <title>SOC Console – SOC Chain Monitor</title>
+  <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body>
+  <header>
+    <a class="brand" href="/" aria-label="SOC Chain Monitor home">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#8b7bff"/><stop offset="1" stop-color="#2de2e6"/></linearGradient></defs>
+        <rect x="2.5" y="9.5" width="11" height="11" rx="2.5" stroke="url(#lg)" stroke-width="2"/>
+        <rect x="18.5" y="11.5" width="11" height="11" rx="2.5" fill="url(#lg)"/>
+        <path d="M13.5 15h5" stroke="#2de2e6" stroke-width="2" stroke-dasharray="2 1.5"/>
+      </svg>
+      <h1>SOC Chain Monitor<span class="sub">operations console</span></h1>
+    </a>
+    <span id="fx-sync" class="sync" title="Local time of the last data update">live · <span id="fx-clock">--:--:--</span></span>
+    <div id="status" class="chips" aria-live="polite"></div>
+    <div class="controls">
+      <label class="sr-only" for="apikey">API key</label>
+      <input id="apikey" type="password" placeholder="API key (optional)" autocomplete="off">
+      <button id="btn-sample" type="button">Load sample attack</button>
+      <button id="btn-refresh" type="button" class="secondary">Refresh</button>
+    </div>
+  </header>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <main>
+    <dl class="kpis" aria-label="Key metrics">
+      <div class="kpi k-alerts"><dt>Total alerts</dt><dd id="kpi-alerts">0</dd><span class="k-sub">all severities</span></div>
+      <div class="kpi k-crit"><dt>Critical</dt><dd id="kpi-critical">0</dd><span class="k-sub">needs response</span></div>
+      <div class="kpi k-batches"><dt>Batches sealed</dt><dd id="kpi-batches">0</dd><span class="k-sub">merkle trees</span></div>
+      <div class="kpi k-anchored"><dt>Anchored</dt><dd id="kpi-anchored">0</dd><span class="k-sub">roots on-chain</span></div>
+      <div class="kpi k-pending"><dt>Pending logs</dt><dd id="kpi-pending">0</dd><span class="k-sub">waiting to seal</span></div>
+    </dl>
+
+    <section class="ledger" aria-labelledby="ledger-title">
+      <div class="sec-head">
+        <div>
+          <span class="label">Live ledger</span>
+          <h2 id="ledger-title">Block chain of sealed batches</h2>
+        </div>
+        <span class="sec-note">click a block to inspect it</span>
+      </div>
+      <div class="sec-body">
+        <ol id="chain-strip" class="chain-strip" aria-live="polite"></ol>
+      </div>
+    </section>
+
+    <section class="alerts" aria-labelledby="alerts-title">
+      <div class="sec-head">
+        <div>
+          <span class="label">Detection</span>
+          <h2 id="alerts-title">Security alerts</h2>
+        </div>
+        <label class="sr-only" for="severity-filter">Filter by severity</label>
+        <select id="severity-filter">
+          <option value="">All severities</option>
+          <option>CRITICAL</option>
+          <option>HIGH</option>
+          <option>MEDIUM</option>
+          <option>LOW</option>
+        </select>
+      </div>
+      <div class="sec-body">
+        <div id="alert-summary" class="chips summary"></div>
+        <div class="scroll"><table id="alerts"></table></div>
+      </div>
+    </section>
+
+    <section class="ingest" aria-labelledby="ingest-title">
+      <div class="sec-head">
+        <div>
+          <span class="label">Mempool</span>
+          <h2 id="ingest-title">Ingest event log</h2>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="ingest-form">
+          <label>Source<input id="in-source" value="aws-cloudtrail"></label>
+          <label>Event type<input id="in-event" value="ConsoleLogin"></label>
+          <label class="full">Actor<input id="in-actor" value="alice"></label>
+          <label class="full">Detail<input id="in-detail" value="success"></label>
+          <div class="row">
+            <button id="btn-ingest" type="button">Ingest event</button>
+            <button id="btn-seal" type="button" class="secondary">Seal batch</button>
+          </div>
+        </div>
+        <p id="pending" class="hint"></p>
+      </div>
+    </section>
+
+    <section aria-labelledby="batches-title">
+      <div class="sec-head">
+        <div>
+          <span class="label">Ledger</span>
+          <h2 id="batches-title">Sealed batches</h2>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="scroll"><table id="batches"></table></div>
+      </div>
+    </section>
+
+    <section id="detail" aria-labelledby="detail-title" hidden>
+      <div class="sec-head">
+        <div>
+          <span class="label">Block inspector</span>
+          <h2 id="detail-title">Batch details</h2>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="row wrap actions">
+          <button id="btn-integrity" type="button">Verify integrity on-chain</button>
+          <button id="btn-detect" type="button" class="secondary">Re-run detection rules</button>
+          <button id="btn-anchor" type="button" class="secondary">Anchor on-chain</button>
+        </div>
+        <div id="integrity" class="card" role="status" aria-live="polite" hidden></div>
+        <div id="merkle-panel" class="merkle" hidden>
+          <div class="merkle-head">
+            <h3>Merkle tree</h3>
+            <span id="merkle-chip" class="merkle-chip NONE">not verified yet</span>
+          </div>
+          <p id="merkle-note" class="merkle-note"></p>
+          <div id="merkle-svg" class="merkle-svg"></div>
+        </div>
+        <div class="scroll"><table id="logs"></table></div>
+
+        <div id="demo-panel" class="demo-panel" hidden>
+          <p class="hint"><strong>Demo mode</strong>Change the selected log to test tamper detection.</p>
+          <div class="row wrap">
+            <label class="sr-only" for="demo-text">Replacement log detail</label>
+            <input id="demo-text" value="nothing happened" maxlength="200">
+            <button id="btn-tamper" type="button" class="danger">Tamper stored log</button>
+            <button id="btn-tamper-smart" type="button" class="danger">Tamper + rewrite local root</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/dashboard.js" defer></script>
+  <script src="/static/merkle-viz.js" defer></script>
+  <script src="/static/console-fx.js" defer></script>
+</body>
+</html>

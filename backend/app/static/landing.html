@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070816">
+  <title>SOC Chain Monitor – Tamper-Evident Security Logs on the Blockchain</title>
+  <meta name="description" content="Security log monitoring with detection rules and blockchain-anchored Merkle roots. Edit a sealed log and the chain exposes it.">
+  <link rel="stylesheet" href="/static/landing.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="SOC Chain Monitor home">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#8b7bff"/><stop offset="1" stop-color="#2de2e6"/></linearGradient></defs>
+          <rect x="2.5" y="9.5" width="11" height="11" rx="2.5" stroke="url(#lg)" stroke-width="2"/>
+          <rect x="18.5" y="11.5" width="11" height="11" rx="2.5" fill="url(#lg)"/>
+          <path d="M13.5 15h5" stroke="#2de2e6" stroke-width="2" stroke-dasharray="2 1.5"/>
+        </svg>
+        <span>SOC Chain Monitor<span class="sub">tamper-evident telemetry</span></span>
+      </a>
+      <nav aria-label="Primary">
+        <a href="#sim">Live pipeline</a>
+        <a href="#rules">Detection</a>
+        <a href="#verdicts">Verdicts</a>
+        <a href="#run">Run it</a>
+        <a href="/docs">API docs</a>
+        <a class="btn small" href="/dashboard">Open console</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero wrap">
+      <div class="orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p class="eyebrow">Security operations · on-chain integrity</p>
+      <h1>Your logs, sealed on a chain <span class="grad-text">no attacker can rewrite.</span></h1>
+      <p class="lead">
+        SOC Chain Monitor detects suspicious security events, seals each batch into a Merkle tree, and anchors the root hash to a smart contract. If one byte changes after sealing, verification reports the batch as tampered.
+      </p>
+      <div class="cta">
+        <a class="btn" href="/dashboard">Open SOC console</a>
+        <a class="btn ghost" href="#sim">Watch the pipeline</a>
+      </div>
+      <div id="live-status" class="live" aria-live="polite">Checking backend status…</div>
+    </section>
+
+    <div class="stream" aria-hidden="true">
+      <div class="track">
+        <span class="ev"><b>ConsoleLogin</b> alice <i>09:02</i></span>
+        <span class="ev hi"><b>FailedLogin</b> admin <i>02:41</i></span>
+        <span class="ev hi"><b>FailedLogin</b> admin <i>02:41</i></span>
+        <span class="ev cr"><b>ConsoleLogin</b> admin · 203.0.113.50 <i>02:42</i></span>
+        <span class="ev cr"><b>AttachRolePolicy</b> AdministratorAccess <i>02:44</i></span>
+        <span class="ev cr"><b>StopLogging</b> CloudTrail <i>02:46</i></span>
+        <span class="ev hi"><b>ConsoleLogin</b> root <i>03:10</i></span>
+        <span class="ev"><b>AssumeRole</b> alice · DevOps <i>09:15</i></span>
+        <span class="ev"><b>Seal</b> batch #0042 · root 0xb71c…09e2</span>
+        <span class="ev"><b>Anchor</b> block 1,204,881</span>
+        <span class="ev"><b>ConsoleLogin</b> alice <i>09:02</i></span>
+        <span class="ev hi"><b>FailedLogin</b> admin <i>02:41</i></span>
+        <span class="ev hi"><b>FailedLogin</b> admin <i>02:41</i></span>
+        <span class="ev cr"><b>ConsoleLogin</b> admin · 203.0.113.50 <i>02:42</i></span>
+        <span class="ev cr"><b>AttachRolePolicy</b> AdministratorAccess <i>02:44</i></span>
+        <span class="ev cr"><b>StopLogging</b> CloudTrail <i>02:46</i></span>
+        <span class="ev hi"><b>ConsoleLogin</b> root <i>03:10</i></span>
+        <span class="ev"><b>AssumeRole</b> alice · DevOps <i>09:15</i></span>
+        <span class="ev"><b>Seal</b> batch #0042 · root 0xb71c…09e2</span>
+        <span class="ev"><b>Anchor</b> block 1,204,881</span>
+      </div>
+    </div>
+
+    <section id="sim" class="sim wrap paused" aria-labelledby="sim-title">
+      <div class="sim-head">
+        <div>
+          <p class="eyebrow">Live pipeline</p>
+          <h2 id="sim-title">Follow one batch from <span class="grad-text">log to ledger</span></h2>
+          <p>Six steps, played on a loop. Click any step to jump to it. The hashes are real SHA-256, computed in your browser with the same scheme as the backend.</p>
+        </div>
+        <div class="sim-ctrl">
+          <button id="sim-toggle" type="button" class="btn small ghost" aria-label="Play animation">Play</button>
+          <button id="sim-restart" type="button" class="btn small ghost">Restart</button>
+        </div>
+      </div>
+
+      <div class="sim-frame">
+        <div class="sim-inner">
+          <ol id="sim-steps" class="sim-steps">
+            <li><button type="button">Step 01<b>Ingest</b><span class="bar"></span></button></li>
+            <li><button type="button">Step 02<b>Detect</b><span class="bar"></span></button></li>
+            <li><button type="button">Step 03<b>Seal</b><span class="bar"></span></button></li>
+            <li><button type="button">Step 04<b>Anchor</b><span class="bar"></span></button></li>
+            <li><button type="button">Step 05<b>Attack</b><span class="bar"></span></button></li>
+            <li><button type="button">Step 06<b>Verify</b><span class="bar"></span></button></li>
+          </ol>
+
+          <div id="sim-stage" class="sim-stage">
+            <div class="lane">
+              <div class="lane-title"><span>Event stream</span><span>batch #0042</span></div>
+              <ul class="logs">
+                <li class="log ok">
+                  <div class="log-card">
+                    <div class="log-top"><span>ConsoleLogin</span><time>09:02 UTC</time></div>
+                    <div class="log-detail">alice · success</div>
+                    <div class="log-foot"><span class="log-flag"><span class="sev OK">CLEAN</span>no rule matched</span><span id="log-hash-0" class="log-hash"></span></div>
+                  </div>
+                </li>
+                <li class="log cr">
+                  <div class="log-card">
+                    <div class="log-top"><span>ConsoleLogin</span><time>02:42 UTC</time></div>
+                    <div class="log-detail">admin · success from 203.0.113.50</div>
+                    <div class="log-foot"><span class="log-flag"><span class="sev CRITICAL">CRITICAL</span>BRUTE_FORCE_SUCCESS</span><span id="log-hash-1" class="log-hash"></span></div>
+                  </div>
+                </li>
+                <li class="log cr victim">
+                  <div class="log-card">
+                    <span class="log-attack">EDITED</span>
+                    <div class="log-top"><span>StopLogging</span><time>02:46 UTC</time></div>
+                    <div class="log-detail">admin · <span class="old">CloudTrail logging disabled</span> <span class="new">routine maintenance</span></div>
+                    <div class="log-foot"><span class="log-flag"><span class="sev CRITICAL">CRITICAL</span>AUDIT_LOGGING_DISABLED</span><span id="log-hash-2" class="log-hash"></span></div>
+                  </div>
+                </li>
+                <li class="log hi">
+                  <div class="log-card">
+                    <div class="log-top"><span>ConsoleLogin</span><time>03:10 UTC</time></div>
+                    <div class="log-detail">root · success</div>
+                    <div class="log-foot"><span class="log-flag"><span class="sev HIGH">HIGH</span>ROOT_ACCOUNT_USAGE</span><span id="log-hash-3" class="log-hash"></span></div>
+                  </div>
+                </li>
+              </ul>
+              <div class="scanner" aria-hidden="true"></div>
+            </div>
+
+            <div class="lane-link link-a" aria-hidden="true"></div>
+
+            <div class="lane">
+              <div class="lane-title"><span>Merkle tree</span><span>sha-256</span></div>
+              <div class="tree">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                  <line class="ln lv1" pathLength="1" x1="12.5" y1="86" x2="25" y2="50"/>
+                  <line class="ln lv1" pathLength="1" x1="37.5" y1="86" x2="25" y2="50"/>
+                  <line class="ln lv1 taint t2" pathLength="1" x1="62.5" y1="86" x2="75" y2="50"/>
+                  <line class="ln lv1" pathLength="1" x1="87.5" y1="86" x2="75" y2="50"/>
+                  <line class="ln lv2" pathLength="1" x1="25" y1="50" x2="50" y2="20"/>
+                  <line class="ln lv2 taint t4" pathLength="1" x1="75" y1="50" x2="50" y2="20"/>
+                </svg>
+                <span class="tree-note">root changed</span>
+                <div id="tn-root" class="tn root taint t5"><small>Merkle root</small><span id="tn-root-h">–</span><span class="lock">ANCHORED</span></div>
+                <div id="tn-n0" class="tn node"><small>node</small><span id="tn-n0-h">–</span></div>
+                <div id="tn-n1" class="tn node taint t3"><small>node</small><span id="tn-n1-h">–</span></div>
+                <div id="tn-l0" class="tn leaf"><small>leaf 0</small><span id="tn-l0-h">–</span></div>
+                <div id="tn-l1" class="tn leaf"><small>leaf 1</small><span id="tn-l1-h">–</span></div>
+                <div id="tn-l2" class="tn leaf taint t1"><small>leaf 2</small><span id="tn-l2-h">–</span></div>
+                <div id="tn-l3" class="tn leaf"><small>leaf 3</small><span id="tn-l3-h">–</span></div>
+              </div>
+            </div>
+
+            <div class="lane-link link-b" aria-hidden="true"></div>
+
+            <div class="lane">
+              <div class="lane-title"><span>Blockchain</span><span>contract</span></div>
+              <ol class="chain-col">
+                <li class="cb new"><b>#0042 <em>just anchored</em></b>root <span id="cb-root">–</span></li>
+                <li class="cb"><b>#0041 <em>2m ago</em></b>root <span>0x2ad6f1c0…f5b8</span></li>
+                <li class="cb"><b>#0040 <em>7m ago</em></b>root <span>0xe08b93aa…7c41</span></li>
+                <li class="cb"><b>#0039 <em>12m ago</em></b>root <span>0x9f3a5e02…12de</span></li>
+              </ol>
+              <div class="chain-foot">append-only · immutable</div>
+            </div>
+          </div>
+
+          <div class="sim-foot">
+            <div class="cap" aria-live="polite">
+              <span id="cap-num" class="cap-num">01</span>
+              <div id="cap-body" class="cap-body">
+                <strong id="cap-title">Ingest</strong>
+                <p id="cap-text">Security events arrive from AWS CloudTrail and are queued for the next batch.</p>
+              </div>
+            </div>
+            <dl class="cmp">
+              <div class="chain-side"><dt>On-chain root</dt><dd id="cmp-chain">not anchored</dd></div>
+              <div><dt>Recomputed now</dt><dd id="cmp-now">–</dd></div>
+              <div class="cmp-v" role="status"></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="block wrap">
+      <div class="block-head">
+        <div>
+          <p class="eyebrow">API</p>
+          <h2>Three endpoints</h2>
+        </div>
+        <p class="muted">The animation above maps directly to these calls.</p>
+      </div>
+      <ol class="steps">
+        <li><h3>Ingest</h3><p>Send security events to <code>POST /logs/ingest</code>. They are stored in SQLite and run through the detection rules.</p></li>
+        <li><h3>Seal &amp; anchor</h3><p><code>POST /logs/seal-batch</code> hashes pending logs into a Merkle tree and commits the root to the smart contract.</p></li>
+        <li><h3>Verify</h3><p><code>GET /logs/batch/{id}/integrity</code> recomputes the root from the stored logs and compares it with the on-chain value.</p></li>
+      </ol>
+    </section>
+
+    <section id="rules" class="block wrap">
+      <div class="block-head">
+        <div>
+          <p class="eyebrow">Detection engine</p>
+          <h2>Detection rules</h2>
+        </div>
+        <p class="muted">These rules run on every sealed batch. You can re-run them from the console.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="rules">
+          <thead><tr><th scope="col">Rule</th><th scope="col">Severity</th><th scope="col">Condition</th></tr></thead>
+          <tbody>
+            <tr><td>BRUTE_FORCE</td><td><span class="sev HIGH">HIGH</span></td><td>3+ failed login attempts from a single actor within 5 minutes.</td></tr>
+            <tr><td>BRUTE_FORCE_SUCCESS</td><td><span class="sev CRITICAL">CRITICAL</span></td><td>Successful login following a brute-force burst within 1 hour.</td></tr>
+            <tr><td>PRIVILEGE_ESCALATION</td><td><span class="sev CRITICAL">CRITICAL</span><span class="sev HIGH">HIGH</span></td><td>IAM permission changes. Raised to CRITICAL when Administrator access is granted.</td></tr>
+            <tr><td>AUDIT_LOGGING_DISABLED</td><td><span class="sev CRITICAL">CRITICAL</span></td><td>CloudTrail, GuardDuty, or security audit logging stopped.</td></tr>
+            <tr><td>ROOT_ACCOUNT_USAGE</td><td><span class="sev HIGH">HIGH</span></td><td>Any activity executed by the root account.</td></tr>
+            <tr><td>OFF_HOURS_LOGIN</td><td><span class="sev MEDIUM">MEDIUM</span></td><td>Successful login between 22:00 and 06:00 UTC.</td></tr>
+            <tr><td>LOG_TAMPERING</td><td><span class="sev CRITICAL">CRITICAL</span></td><td>Stored logs do not match the root hash on the chain.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="verdicts" class="block wrap">
+      <div class="block-head">
+        <div>
+          <p class="eyebrow">Integrity</p>
+          <h2>Integrity verdicts</h2>
+        </div>
+        <p class="muted">If the blockchain node can&apos;t be reached, verification fails closed. A tampered batch is never reported as intact.</p>
+      </div>
+      <dl class="verdict-list">
+        <div class="v INTACT"><dt>INTACT</dt><dd>The logs match the root hash stored on the chain.</dd></div>
+        <div class="v TAMPERED"><dt>TAMPERED</dt><dd>The stored logs don&apos;t match the anchored root. This raises a CRITICAL alert.</dd></div>
+        <div class="v UNVERIFIABLE"><dt>UNVERIFIABLE</dt><dd>The blockchain is unreachable, or the batch is missing from the contract.</dd></div>
+        <div class="v UNANCHORED"><dt>UNANCHORED</dt><dd>The batch is sealed locally but has not been committed to the chain yet.</dd></div>
+      </dl>
+    </section>
+
+    <section id="run" class="block wrap">
+      <div class="block-head">
+        <div>
+          <p class="eyebrow">Deploy</p>
+          <h2>Run it locally</h2>
+        </div>
+        <p class="muted">Run each step in its own terminal.</p>
+      </div>
+      <div class="terminals">
+        <figure>
+          <figcaption>01 · Blockchain node <span>contracts/</span></figcaption>
+          <pre><code>cd contracts
+npm install
+npx hardhat compile
+npx hardhat node</code></pre>
+        </figure>
+        <figure>
+          <figcaption>02 · Deploy contract <span>contracts/</span></figcaption>
+          <pre><code>cd contracts
+npx hardhat run scripts/deploy.js `
+  --network localhost</code></pre>
+        </figure>
+        <figure>
+          <figcaption>03 · FastAPI backend <span>backend/</span></figcaption>
+          <pre><code>cd backend
+.\venv\Scripts\Activate.ps1
+$env:SOC_DEMO_MODE = "1"
+python -m uvicorn app.main:app --reload</code></pre>
+        </figure>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="SOC Chain Monitor home">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect x="2.5" y="9.5" width="11" height="11" rx="2.5" stroke="#8b7bff" stroke-width="2"/>
+          <rect x="18.5" y="11.5" width="11" height="11" rx="2.5" fill="#2de2e6"/>
+          <path d="M13.5 15h5" stroke="#2de2e6" stroke-width="2" stroke-dasharray="2 1.5"/>
+        </svg>
+        SOC Chain Monitor
+      </a>
+      <a href="/dashboard">Console</a>
+      <a href="/docs">API docs</a>
+      <a href="/health">System health</a>
+    </div>
+  </footer>
+
+  <script src="/static/landing.js" defer></script>
+</body>
+</html>

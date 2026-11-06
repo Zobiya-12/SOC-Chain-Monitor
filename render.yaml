@@ -1,0 +1,20 @@
+# Render blueprint: deploys the backend with the SIMULATED ledger (no blockchain node needed).
+# In Render: New > Blueprint > pick this repo. SOC_API_KEY is generated for you (see the service's Environment tab).
+services:
+  - type: web
+    name: soc-chain-monitor
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: SOC_CHAIN_MODE
+        value: simulated
+      - key: SOC_DEMO_MODE
+        value: "1"
+      - key: SOC_API_KEY
+        generateValue: true
